@@ -28,7 +28,7 @@ export default async function handler(req, res) {
   const cloudName = 'YOUR_CLOUD_NAME'; 
   
   // This URL tells Cloudinary to put the uniqueCode on top of blank_coupon.png
-  const cloudinaryUrl = `https://res.cloudinary.com/${cloudName}/image/upload/l_text:Arial_60_bold:${uniqueCode},y_50/blank_coupon.png`;
+  const cloudinaryUrl = `https://res.cloudinary.com/dvgje8p9s/image/upload/l_text:Arial_35_bold:${uniqueCode},g_south_west,x_80,y_70/v1772260712/blank_coupon_kwdgvu.png`;
 
   // 5. Build the simple webpage the user will see
   const html = `
@@ -57,4 +57,5 @@ export default async function handler(req, res) {
   res.setHeader('Content-Type', 'text/html');
   res.status(200).send(html);
 }
+
 
