@@ -14,9 +14,14 @@ export default async function handler(req, res) {
     .from('coupons')
     .insert([{ code: uniqueCode }]);
 
-  if (error) {
-    return res.status(500).json({ error: 'Failed to save coupon to database.' });
-  }
+ if (error) {
+  return res.status(500).json({ 
+    error: 'Failed to save coupon to database.', 
+    supabase_details: error,
+    url_status: supabaseUrl ? "URL is loaded" : "URL is MISSING",
+    key_status: supabaseKey ? "Key is loaded" : "Key is MISSING"
+  });
+}
 
   // 4. Create the Cloudinary Image URL
   // REPLACE "YOUR_CLOUD_NAME" with your actual Cloudinary name!
@@ -52,3 +57,4 @@ export default async function handler(req, res) {
   res.setHeader('Content-Type', 'text/html');
   res.status(200).send(html);
 }
+
