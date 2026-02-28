@@ -1,33 +1,41 @@
 import { createClient } from '@supabase/supabase-js';
 
-// 1. Connect to your Supabase Database (We will add these keys in Vercel later)
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default async function handler(req, res) {
-  // 2. Generate a random 6-character code (e.g., "8A2X9B")
-  const uniqueCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-
-  // 3. Save the code to your Supabase 'coupons' table
-  const { error } = await supabase
+  // 1. Find ONE code in your list that hasn't been handed out yet
+  const { data: availableCoupon, error: fetchError } = await supabase
     .from('coupons')
-    .insert([{ code: uniqueCode }]);
+    .select('*')
+    .eq('is_issued', false)
+    .limit(1)
+    .single(); 
 
- if (error) {
-  return res.status(500).json({ 
-    error: 'Failed to save coupon to database.', 
-    supabase_details: error,
-    url_status: supabaseUrl ? "URL is loaded" : "URL is MISSING",
-    key_status: supabaseKey ? "Key is loaded" : "Key is MISSING"
-  });
-}
+  // 2. Handle the scenario where you run out of codes in your CSV
+  if (fetchError || !availableCoupon) {
+    return res.status(200).send(`
+      <div style="text-align: center; font-family: sans-serif; padding: 50px;">
+        <h2>Sorry!</h2>
+        <p>All of our promotional coupons have been claimed.</p>
+      </div>
+    `);
+  }
 
-  // 4. Create the Cloudinary Image URL
-  // REPLACE "YOUR_CLOUD_NAME" with your actual Cloudinary name!
-  const cloudName = 'YOUR_CLOUD_NAME'; 
-  
-  // This URL tells Cloudinary to put the uniqueCode on top of blank_coupon.png
+  const uniqueCode = availableCoupon.code;
+
+  // 3. Mark THIS specific code as "issued" in Supabase so the next person gets a different one
+  const { error: updateError } = await supabase
+    .from('coupons')
+    .update({ is_issued: true })
+    .eq('id', availableCoupon.id);
+
+  if (updateError) {
+     return res.status(500).json({ error: 'Failed to update coupon status.' });
+  }
+
+  // 4. Create your specific Cloudinary Image URL
   const cloudinaryUrl = `https://res.cloudinary.com/dvgje8p9s/image/upload/l_text:Arial_35_bold:${uniqueCode},g_south_west,x_80,y_70/v1772260712/blank_coupon_kwdgvu.png`;
 
   // 5. Build the simple webpage the user will see
@@ -57,5 +65,3 @@ export default async function handler(req, res) {
   res.setHeader('Content-Type', 'text/html');
   res.status(200).send(html);
 }
-
-
