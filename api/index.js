@@ -36,7 +36,7 @@ export default async function handler(req, res) {
   }
 
   // 3. Create your Cloudinary URL with updated positioning (Moved Left to x_40, Moved Down to y_30)
-  const cloudinaryUrl = `https://res.cloudinary.com/dvgje8p9s/image/upload/l_text:Arial_35_bold:${uniqueCode},g_south_west,x_70,y_20/v1772260712/blank_coupon_kwdgvu.png`;
+  const cloudinaryUrl = `https://res.cloudinary.com/dvgje8p9s/image/upload/l_text:Arial_35_bold:${uniqueCode},g_south_west,x_40,y_40/v1772260712/blank_coupon_kwdgvu.png`;
 
   // 4. Build the simple webpage the user will see
   const html = `
@@ -65,6 +65,7 @@ export default async function handler(req, res) {
   res.setHeader('Content-Type', 'text/html');
   res.status(200).send(html);
 }
+
 
 
 
