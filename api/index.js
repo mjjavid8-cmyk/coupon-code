@@ -5,7 +5,7 @@ const supabaseKey = process.env.SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default async function handler(req, res) {
-  // 1. Find ONE code in your list that hasn't been handed out yet
+  // 1. Find ONE code in your CSV list that hasn't been handed out yet
   const { data: availableCoupon, error: fetchError } = await supabase
     .from('coupons')
     .select('*')
@@ -13,7 +13,7 @@ export default async function handler(req, res) {
     .limit(1)
     .single(); 
 
-  // 2. Handle the scenario where you run out of codes in your CSV
+  // Handle the scenario where you run out of codes in your CSV
   if (fetchError || !availableCoupon) {
     return res.status(200).send(`
       <div style="text-align: center; font-family: sans-serif; padding: 50px;">
@@ -25,7 +25,7 @@ export default async function handler(req, res) {
 
   const uniqueCode = availableCoupon.code;
 
-  // 3. Mark THIS specific code as "issued" in Supabase so the next person gets a different one
+  // 2. Mark THIS specific code as "issued" in Supabase so the next person gets a new one
   const { error: updateError } = await supabase
     .from('coupons')
     .update({ is_issued: true })
@@ -35,10 +35,10 @@ export default async function handler(req, res) {
      return res.status(500).json({ error: 'Failed to update coupon status.' });
   }
 
-  // 4. Create your specific Cloudinary Image URL
-  const cloudinaryUrl = `https://res.cloudinary.com/dvgje8p9s/image/upload/l_text:Arial_35_bold:${uniqueCode},g_south_west,x_80,y_70/v1772260712/blank_coupon_kwdgvu.png`;
+  // 3. Create your Cloudinary URL with updated positioning (Moved Left to x_40, Moved Down to y_30)
+  const cloudinaryUrl = `https://res.cloudinary.com/dvgje8p9s/image/upload/l_text:Arial_35_bold:${uniqueCode},g_south_west,x_40,y_30/v1772260712/blank_coupon_kwdgvu.png`;
 
-  // 5. Build the simple webpage the user will see
+  // 4. Build the simple webpage the user will see
   const html = `
     <!DOCTYPE html>
     <html>
@@ -61,7 +61,7 @@ export default async function handler(req, res) {
     </html>
   `;
 
-  // 6. Send the webpage to the user's phone
+  // 5. Send the webpage to the user's phone
   res.setHeader('Content-Type', 'text/html');
   res.status(200).send(html);
 }
